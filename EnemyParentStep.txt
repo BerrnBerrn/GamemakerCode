@@ -1,0 +1,25 @@
+//Damage
+#region
+
+	get_damage(oDamageEnemy)
+
+#endregion
+
+//Death
+#region
+	
+	if hp <= 0 && object_get_name(object_index) == "oEnemyParent"
+	{
+		
+		global.mission_active = false;
+		instance_create_layer(x, y, "Instances", oGunPickup);
+		global.tutAlive = false;
+		instance_destroy();
+		
+	}
+	if hp <= 0
+	{
+		instance_destroy();
+	}
+
+#endregion

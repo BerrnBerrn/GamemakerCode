@@ -1,0 +1,153 @@
+var rightKey_active = keyboard_check(global.rightKey);
+var leftKey_active = keyboard_check(global.leftKey);
+var upKey_active = keyboard_check(global.upKey);
+var downKey_active = keyboard_check(global.downKey);
+var shootKey_active = keyboard_check(global.shootKey);
+var swapKeyPressed_active = keyboard_check_pressed(global.swapKey);
+var shiftPressed_active = keyboard_check(global.sprintKey);
+var interactKeyPressed_active = keyboard_check_pressed(global.interactKey);
+
+if (interactKeyPressed_active)
+{
+    if (in_car)
+    {
+        scr_player_exit_car();
+    }
+    else
+    {
+        if (oWantedManager.hiding_in_bin)
+        {
+            with (oWantedManager) hiding_in_bin = false;
+        }
+        else
+        {
+            var nearby_bin = instance_place(x, y, oBin);
+            if (nearby_bin != noone)
+            {
+                with (oWantedManager) {
+                    hiding_in_bin = true; current_bin = nearby_bin; wanted_timer = 0;
+                }
+                x = nearby_bin.x; y = nearby_bin.y;
+                with (oPolice) { investigating = true; ignore_walls = true; }
+            }
+            else
+            {
+                var _nearest_car = instance_nearest(x, y, oCar);
+                if (_nearest_car != noone && _nearest_car.driver == noone && point_distance(x, y, _nearest_car.x, _nearest_car.y) < global.ENTER_CAR_DISTANCE)
+                {
+                    in_car = true;
+                    current_car = _nearest_car;
+                    _nearest_car.driver = id;
+                    _nearest_car.just_entered_by_driver = true;
+                }
+            }
+        }
+    }
+}
+
+if (in_car && hp == 1)
+{
+    if (current_car != noone && instance_exists(current_car))
+    {
+        scr_player_exit_car();
+    }
+}
+
+if (in_car)
+{
+    visible = false;
+    xspd = 0; yspd = 0;
+    if (current_car != noone && instance_exists(current_car))
+    {
+        x = current_car.x;
+        y = current_car.y;
+    }
+    else {
+        if (in_car) {
+             scr_player_exit_car();
+        }
+    }
+}
+else if (oWantedManager.hiding_in_bin)
+{
+    visible = false;
+    xspd = 0; yspd = 0;
+}
+else
+{
+    visible = true;
+    if (!menu_open) {
+        var _horizKey_input = rightKey_active - leftKey_active;
+        var _vertKey_input = downKey_active - upKey_active;
+        if (_horizKey_input != 0 || _vertKey_input != 0) { moveDir = point_direction(0, 0, _horizKey_input, _vertKey_input); }
+        var _inputLevel = clamp(point_distance(0, 0, _horizKey_input, _vertKey_input), 0, 1);
+        var _current_move_spd = (shiftPressed_active) ? 4 : 2;
+        var _spd_to_apply = _current_move_spd * _inputLevel;
+        xspd = lengthdir_x(_spd_to_apply, moveDir);
+        yspd = lengthdir_y(_spd_to_apply, moveDir);
+        if place_meeting(x + xspd, y, oWall) { while(!place_meeting(x + sign(xspd), y, oWall) && sign(xspd) != 0) { x += sign(xspd); } xspd = 0; }
+        x += xspd;
+        if place_meeting(x, y + yspd, oWall) { while(!place_meeting(x, y + sign(yspd), oWall) && sign(yspd) != 0) { y += sign(yspd); } yspd = 0; }
+        y += yspd;
+    } else { xspd = 0; yspd = 0; }
+
+    centerY = y + centerYOffset;
+    aimDir = point_direction(x, centerY, mouse_x, mouse_y);
+
+    face = round(aimDir / 90); if (face == 4) { face = 0; }
+    if (xspd == 0 && yspd == 0) { image_index = 0; } else { image_speed = 0.2; }
+    sprite_index = sprite[face];
+
+    var _playerWeapons = global.PlayerWeapons;
+    if (swapKeyPressed_active) {
+        selectedWeapon++; if (selectedWeapon >= array_length(_playerWeapons)) { selectedWeapon = 0; }
+        weapon = global.PlayerWeapons[selectedWeapon];
+    }
+
+    if (shootTimer > 0) { shootTimer--; }
+    if (global.shootKey && shootTimer <= 0 && variable_struct_exists(weapon, "cooldown") && weapon.cooldown > 0) {
+        shootTimer = weapon.cooldown;
+        var _xOffset = lengthdir_x(weapon.length + weaponOffsetDist, aimDir);
+        var _yOffset = lengthdir_y(weapon.length + weaponOffsetDist, aimDir);
+        var _spread = weapon.spread; var _spreadDiv = _spread / max(weapon.bulletNum - 1, 1);
+        for (var i = 0; i < weapon.bulletNum; i++) {
+            if (variable_struct_exists(weapon, "bulletObj") && weapon.bulletObj != noone) {
+                var _bulletInst = instance_create_depth(x + _xOffset, centerY + _yOffset, depth + 100, weapon.bulletObj);
+                with (_bulletInst) {
+                    dir = other.aimDir - _spread / 2 + _spreadDiv * i;
+                    if (variable_instance_exists(id, "dirFix") && dirFix == true) { image_angle = dir; }
+                }
+            }
+        }
+    }
+}
+
+if (!oWantedManager.hiding_in_bin) {
+    if place_meeting(x, y, oFirstAid) { hp = 5;}
+}
+
+get_damage(oDamagePlayer, true);
+
+if (hp <= 0)
+{
+    if (in_car && current_car != noone && instance_exists(current_car)) {
+        current_car.driver = noone;
+    }
+    var _gameOverInst = instance_find(oGameOverScreen, 0);
+    if (instance_exists(_gameOverInst))
+    {
+        if (!_gameOverInst.activated)
+        {
+            _gameOverInst.death_x = x; _gameOverInst.death_y = y;
+            _gameOverInst.x = x; _gameOverInst.y = y;
+            _gameOverInst.activated = true; _gameOverInst.visible = true; _gameOverInst.alpha = 0;
+        }
+    }
+    else
+    {
+        var _newGameOverInst = instance_create_depth(x, y, -5000, oGameOverScreen);
+        _newGameOverInst.death_x = x; _newGameOverInst.death_y = y;
+        _newGameOverInst.activated = true; _newGameOverInst.visible = true; _newGameOverInst.alpha = 0;
+    }
+    instance_destroy();
+}

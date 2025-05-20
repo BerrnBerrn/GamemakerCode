@@ -1,0 +1,18 @@
+
+if (visible)
+{
+
+    if (aimDir >= 180 && aimDir < 360) {
+        draw_self();
+    }
+
+
+    if (weapon != global.WeaponList.fist) { 
+        draw_my_weapon();
+    }
+    
+    if (aimDir >= 0 && aimDir < 180) {
+        draw_self();
+    }
+
+}

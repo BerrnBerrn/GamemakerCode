@@ -1,0 +1,57 @@
+if (wanted_level > 0) {
+    current_police = instance_number(oPolice);
+    
+	if (!oWantedManager.hiding_in_bin && oWantedManager.effective_wanted > 0) {
+	    if (current_police < max_police) {
+	        if (random(room_speed) < 1) {
+	            var position_found = false;
+	            var attempts = 0;
+	            var max_attempts = 50;
+            
+	            while (!position_found && attempts < max_attempts) {
+	                attempts++;
+	                var spawn_x = random(room_width);
+	                var spawn_y = random(room_height);
+                
+
+	                if (!collision_point(spawn_x, spawn_y, oSolidWall, false, true) && 
+	                    !position_meeting(spawn_x, spawn_y, oSolidWall)) {
+                    
+
+	                    var buffer = 32;
+	                    if (!collision_circle(spawn_x, spawn_y, buffer, oSolidWall, false, true)) {
+	                        position_found = true;
+	                        instance_create_layer(spawn_x, spawn_y, "Instances", oPolice);
+	                        current_police++;
+	                        show_debug_message("Police spawned at (" + string(spawn_x) + "," + string(spawn_y) + 
+	                                         ") Count: " + string(current_police) + "/" + string(max_police));
+	                    }
+	                }
+	            }
+            
+	            if (!position_found) {
+	                show_debug_message("Failed to find valid spawn position after " + string(attempts) + " attempts");
+	            }
+	        }
+	    }
+	}
+}
+
+
+effective_wanted = hiding_in_bin ? 0 : wanted_level;
+
+if (hiding_in_bin) {
+    wanted_timer++;
+    if (wanted_timer >= room_speed) {
+        wanted_level = max(0, wanted_level - 3);
+        wanted_timer = 0;
+    }
+
+    flash_timer = (flash_timer + 1) % (flash_interval * 2);
+
+    if (instance_exists(current_bin) && instance_exists(oPlayer)) {
+        oPlayer.x = current_bin.x;
+        oPlayer.y = current_bin.y;
+        oPlayer.speed = 0;
+    }
+}

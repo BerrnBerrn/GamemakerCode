@@ -1,0 +1,112 @@
+if (!variable_global_exists("GAME_INIT_COMPLETE") || global.GAME_INIT_COMPLETE == false) {
+    exit;
+}
+
+var _upKey_is_pressed = keyboard_check(global.upKey);
+var _downKey_is_pressed = keyboard_check(global.downKey);
+var _leftKey_is_pressed = keyboard_check(global.leftKey);
+var _rightKey_is_pressed = keyboard_check(global.rightKey);
+
+if (_debug_timer_car_step <= 0) {
+    show_debug_message("oCar: up_keycode=" + string(global.upKey) + " up_active=" + string(_upKey_is_pressed) +
+                       " down_active=" + string(_downKey_is_pressed) +
+                       " left_active=" + string(_leftKey_is_pressed) +
+                       " right_active=" + string(_rightKey_is_pressed) +
+                       " cSpeed=" + string(cSpeed) + " driver=" + string(driver!=noone) );
+    _debug_timer_car_step = 30;
+}
+_debug_timer_car_step--;
+
+if (driver != noone && instance_exists(driver))
+{
+	path_end();
+	if stolen = false {instance_create_depth(x, y, 0, oCivilianDriver); stolen = true;}
+    if (driver.hp == 1) {
+        max_speed = original_max_speed / 2;
+        max_reverse_speed = original_max_reverse_speed / 2;
+    } else {
+        max_speed = original_max_speed;
+        max_reverse_speed = original_max_reverse_speed;
+    }
+
+    if (just_entered_by_driver)
+    {
+        cSpeed = 0;
+        just_entered_by_driver = false;
+    }
+    else
+    {
+        if (global.upKey)
+        {
+            cSpeed = min(cSpeed + acceleration, max_speed);
+        }
+        else if (global.downKey)
+        {
+            if (cSpeed > 0) {
+                cSpeed = max(0, cSpeed - brake_strength);
+            } else {
+                cSpeed = max(cSpeed - acceleration, max_reverse_speed);
+            }
+        }
+        else
+        {
+            cSpeed = 0;
+        }
+    }
+
+    var _can_turn_now = abs(cSpeed) > 0.01 || _upKey_is_pressed || _downKey_is_pressed || _leftKey_is_pressed || _rightKey_is_pressed;
+    if (_can_turn_now) {
+        var _turn_input = _rightKey_is_pressed - _leftKey_is_pressed;
+        if (_turn_input != 0) {
+            var _current_turn_speed = turn_speed;
+            if (cSpeed < 0) { _current_turn_speed *= -1; }
+            direction -= _turn_input * _current_turn_speed;
+        }
+    }
+    image_angle = direction;
+}
+else
+{
+    driver = noone;
+    just_entered_by_driver = false;
+    max_speed = original_max_speed;
+    max_reverse_speed = original_max_reverse_speed;
+    cSpeed = 0;
+	image_angle = direction;
+	
+}
+
+if (abs(cSpeed) < 0.001 && cSpeed != 0) {
+    cSpeed = 0;
+}
+
+var _move_x = lengthdir_x(cSpeed, direction);
+var _move_y = lengthdir_y(cSpeed, direction);
+
+if (place_meeting(x + _move_x, y, oWall))
+{
+    var _sign_move_x = sign(_move_x);
+    if (_sign_move_x != 0) {
+        while (!place_meeting(x + _sign_move_x, y, oWall))
+        {
+            x += _sign_move_x;
+        }
+    }
+    _move_x = 0;
+    cSpeed = 0;
+}
+x += _move_x;
+
+if (place_meeting(x, y + _move_y, oWall))
+{
+    var _sign_move_y = sign(_move_y);
+    if (_sign_move_y != 0) {
+        while (!place_meeting(x, y + _sign_move_y, oWall))
+        {
+            y += _sign_move_y;
+        }
+    }
+    _move_y = 0;
+    cSpeed = 0;
+}
+y += _move_y;

@@ -1,0 +1,30 @@
+
+event_inherited();
+
+
+spd = 2.5;
+chase_speed = 3.5;
+dir = 0;
+xspd = 0;
+yspd = 0;
+
+face = 3;
+sprite[0] = sPoliceRight;
+sprite[1] = sPoliceUp;
+sprite[2] = sPoliceLeft;
+sprite[3] = sPoliceDown;
+
+investigating = false;
+investigate_x = 2125;
+investigate_y = 937;
+ignore_walls = false;
+
+switch(room) {
+
+    case rmMain:
+        break;
+        
+    default:
+        instance_destroy();
+        exit;
+}

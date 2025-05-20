@@ -1,0 +1,53 @@
+//Damaged
+#region
+get_damaged_create(5, true); 
+#endregion
+
+//Info
+#region
+moveDir = 0;
+moveSpd = 2;
+xspd = 0;
+yspd = 0;
+
+in_car = false;
+current_car = noone;
+
+global.mission_active = false;
+global.mission_goal = noone;
+menu_open = false;
+#endregion
+
+//Sprite
+#region
+centerYOffset = -10;
+centerY = y + centerYOffset;
+
+weaponOffsetDist = 4;
+aimDir = 0;
+
+face = 3;
+sprite[0] = sPlayerRight;
+sprite[1] = sPlayerUp;
+sprite[2] = sPlayerLeft;
+sprite[3] = sPlayerDown;
+#endregion
+
+//WeaponInfo
+#region
+shootTimer = 0;
+array_push(global.PlayerWeapons, global.WeaponList.fist);
+selectedWeapon = 0;
+weapon = global.PlayerWeapons[selectedWeapon];
+#endregion
+
+//Coin
+#region
+if (!variable_global_exists("coins")) {
+    global.coins = 0;
+}
+#endregion
+
+if (!instance_exists(oGameOverScreen)) {
+    instance_create_depth(x, y, -5000, oGameOverScreen);
+}

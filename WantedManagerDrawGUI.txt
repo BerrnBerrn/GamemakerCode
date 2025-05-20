@@ -1,0 +1,33 @@
+
+if (wanted_level >= 1) {
+    var star_size = 32;
+    var margin = 20;
+    var spacing = 5;
+    var start_x = display_get_gui_width() - margin;
+    var start_y = margin;
+
+    var stars = clamp(ceil(wanted_level / 10), 1, 5);
+
+    for (var i = 0; i < stars; i++) {
+        var x_pos = start_x - (i * (star_size + spacing)) - star_size;
+        var y_pos = start_y;
+
+        draw_sprite_ext(sStarOutline, 0, x_pos, y_pos, 1, 1, 0, c_black, 1);
+
+        if (!hiding_in_bin || flash_timer < flash_interval/2) {
+            draw_sprite_ext(sStar, 0, x_pos, y_pos, 1, 1, 0, c_white, 1);
+        }
+    }
+
+    draw_set_font(PixelOperator);
+    draw_set_color(c_white);
+    draw_set_halign(fa_right);
+    draw_text(start_x, y_pos + star_size + 20, "WANTED");
+}
+
+if (hiding_in_bin) {
+    draw_set_font(PixelOperator);
+    draw_set_color(c_white);
+    draw_set_halign(fa_center);
+    draw_text(display_get_gui_width()/2, 20, "HIDING (Wanted level decreasing)");
+}

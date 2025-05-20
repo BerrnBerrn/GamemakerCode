@@ -1,0 +1,12 @@
+wanted_level = 0;
+timer = 0;
+global.chase = false;
+max_police = 0;
+current_police = 0;
+wanted_level = 0;
+hiding_in_bin = false;
+flash_timer = 0;
+flash_interval = 15;
+effective_wanted = 0;
+current_bin = noone;
+wanted_timer = 0;

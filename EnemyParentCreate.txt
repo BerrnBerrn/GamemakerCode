@@ -1,0 +1,4 @@
+// Inherit the parent event
+event_inherited();
+global.tutAlive = true;
+get_damaged_create()

@@ -1,0 +1,19 @@
+draw_self();
+
+
+if (driver == noone)
+{
+    var _player_inst = instance_find(oPlayer, 0);
+    if (instance_exists(_player_inst))
+    {
+        if (!_player_inst.in_car && point_distance(x, y, _player_inst.x, _player_inst.y) < global.ENTER_CAR_PROMPT_DISTANCE)
+        {
+            draw_set_halign(fa_center);
+            draw_set_valign(fa_bottom);
+            draw_set_color(c_white);
+            draw_text(x, y - (sprite_get_height(sprite_index) / 2) - 8, "Press E to Enter");
+            draw_set_halign(fa_left);
+            draw_set_valign(fa_top);
+        }
+    }
+}

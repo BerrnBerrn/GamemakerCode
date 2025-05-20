@@ -1,0 +1,58 @@
+if (instance_exists(oPlayer)) {
+    var distance_to_enemy = point_distance(x, y, oPlayer.x, oPlayer.y);
+    
+    if (oWantedManager.hiding_in_bin || oWantedManager.wanted_level <= 0) {
+        if (!investigating) {
+            investigating = true;
+            ignore_walls = true;
+            xspd = 0;
+            yspd = 0;
+        }
+        
+        dir = point_direction(x, y, investigate_x, investigate_y);
+        xspd = lengthdir_x(spd * 0.8, dir);
+        yspd = lengthdir_y(spd * 0.8, dir);
+        
+        x += xspd;
+        y += yspd;
+        
+        if (point_distance(x, y, investigate_x, investigate_y) < 10) {
+            with (oWantedManager) current_police--;
+            instance_destroy();
+            exit;
+        }
+    }
+
+    else if (distance_to_enemy <= 400 && oWantedManager.effective_wanted > 0) {
+        investigating = false;
+        ignore_walls = false;
+        
+        dir = point_direction(x, y, oPlayer.x, oPlayer.y);
+        xspd = lengthdir_x(chase_speed, dir);
+        yspd = lengthdir_y(chase_speed, dir);
+        
+        if (!ignore_walls) {
+            if (place_meeting(x + xspd, y, oWall) || place_meeting(x + xspd, y, oEnemyParent)) {
+                xspd = 0;
+            }
+            if (place_meeting(x, y + yspd, oWall) || place_meeting(x, y + yspd, oEnemyParent)) {
+                yspd = 0;
+            }
+        }
+        
+        x += xspd;
+        y += yspd;
+    }
+    
+
+    face = round(dir/90);
+    if (face >= 4) face = 0;
+    sprite_index = sprite[face];
+    if (xspd == 0 && yspd == 0) image_index = 0;
+}
+
+if (place_meeting(x, y, oBulletSmall)) {
+    increase_wanted();
+}
+
+event_inherited();
